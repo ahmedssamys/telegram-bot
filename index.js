@@ -21,7 +21,7 @@ bot.onText(/\/start/, (msg) => {
   const username = msg.from.username;
 
   if (username) {
-    const link = `https://www.arab-club.com/p/register-form?user=@${username}`;
+    const link = `https://www.arab-club.com/p/register-form?user=${username}`;
     const message = `مرحبًا بك عزيزي 👋💖  
 شكرًا لانضمامك وسط آلاف الأعضاء الذين ينضمون لدينا كل يوم من الإناث والرجال 👥💫
 
