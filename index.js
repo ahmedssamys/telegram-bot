@@ -12,7 +12,7 @@ app.listen(port, () => {
 });
 
 // توكن البوت من البيئة
-const token = process.env.BOT_TOKEN || 'PUT_YOUR_TOKEN_HERE';
+const token = process.env.BOT_TOKEN || '7514683360:AAE3krLLlXY8jm7poIN2mFivA6udWIVOfLY';
 const bot = new TelegramBot(token, { polling: true });
 
 // عند /start
