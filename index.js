@@ -15,7 +15,7 @@ app.listen(port, () => {
 const token = process.env.BOT_TOKEN || '7514683360:AAE3krLLlXY8jm7poIN2mFivA6udWIVOfLY';
 const bot = new TelegramBot(token, { polling: true });
 
-// أي أمر /start أو كلمة "ريستارت"
+// عند /start أو "ريستارت"
 bot.onText(/\/start|ريستارت/i, (msg) => {
   const chatId = msg.chat.id;
   const username = msg.from.username;
@@ -58,16 +58,37 @@ ${link}
 5. اكتب اسم المستخدم الذي تريده (بالإنجليزية فقط، بدون مسافات).  
 6. إذا كان متاحًا، اضغط "حفظ" (✔️).
 
-بعد إضافة اسم المستخدم: ارجع للمحادثة معنا هنا، ثم اضغط على الزر أدناه لإعادة المحاولة.`;
+بعد إضافة اسم المستخدم، اضغط الزر أدناه لإعادة المحاولة 👇`;
 
     bot.sendMessage(chatId, message, {
       reply_markup: {
-        keyboard: [
-          [{ text: '🔁 ريستارت' }]
-        ],
-        resize_keyboard: true,
-        one_time_keyboard: true
+        inline_keyboard: [
+          [
+            {
+              text: '🔁 إعادة البدء',
+              callback_data: 'restart'
+            }
+          ]
+        ]
       }
+    });
+  }
+});
+
+// لما المستخدم يضغط على زر "إعادة البدء"
+bot.on('callback_query', (callbackQuery) => {
+  const msg = callbackQuery.message;
+  const data = callbackQuery.data;
+
+  if (data === 'restart') {
+    bot.sendMessage(msg.chat.id, 'جاري إعادة البدء... 🌀').then(() => {
+      // نحفّز كأن المستخدم كتب /start من نفسه
+      bot.emit('message', {
+        message_id: msg.message_id + 1,
+        chat: msg.chat,
+        from: callbackQuery.from,
+        text: '/start'
+      });
     });
   }
 });
