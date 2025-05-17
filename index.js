@@ -17,9 +17,18 @@ const bot = new TelegramBot(token, { polling: true });
 
 // عند /start أو "ريستارت"
 bot.onText(/\/start|ريستارت/i, (msg) => {
-  const chatId = msg.chat.id;
-  const username = msg.from.username;
+  handleStart(msg.chat.id, msg.from.username);
+});
 
+// عند الضغط على زر "إعادة البدء"
+bot.on('callback_query', (callbackQuery) => {
+  const msg = callbackQuery.message;
+  const username = callbackQuery.from.username;
+  handleStart(msg.chat.id, username);
+});
+
+// دالة تنفيذ محتوى /start أو restart
+function handleStart(chatId, username) {
   if (username) {
     const link = `https://www.arab-club.com/p/register-form?user=${username}`;
     const message = `مرحبًا بك عزيزي 👋💖  
@@ -63,32 +72,9 @@ ${link}
     bot.sendMessage(chatId, message, {
       reply_markup: {
         inline_keyboard: [
-          [
-            {
-              text: '/start',
-              callback_data: '/start'
-            }
-          ]
+          [{ text: '🔁 إعادة البدء', callback_data: 'restart' }]
         ]
       }
     });
   }
-});
-
-// لما المستخدم يضغط على زر "إعادة البدء"
-bot.on('callback_query', (callbackQuery) => {
-  const msg = callbackQuery.message;
-  const data = callbackQuery.data;
-
-  if (data === 'restart') {
-    bot.sendMessage(msg.chat.id, '/start').then(() => {
-      // نحفّز كأن المستخدم كتب /start من نفسه
-      bot.emit('message', {
-        message_id: msg.message_id + 1,
-        chat: msg.chat,
-        from: callbackQuery.from,
-        text: '/start'
-      });
-    });
-  }
-});
+}
