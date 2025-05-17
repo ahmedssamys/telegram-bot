@@ -90,7 +90,7 @@ ${link}
     bot.sendMessage(chatId, message, {
       reply_markup: {
         inline_keyboard: [
-          [{ text: '✅ إعادة تفعيل طلبي', callback_data: 'restart' }]
+          [{ text: 'إعادة تفعيل طلبي✅', callback_data: 'restart' }]
         ]
       }
     });
