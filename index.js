@@ -81,7 +81,7 @@ bot.on('callback_query', (callbackQuery) => {
   const data = callbackQuery.data;
 
   if (data === 'restart') {
-    bot.sendMessage(msg.chat.id, 'جاري إعادة البدء... 🌀').then(() => {
+    bot.sendMessage(msg.chat.id, '/start').then(() => {
       // نحفّز كأن المستخدم كتب /start من نفسه
       bot.emit('message', {
         message_id: msg.message_id + 1,
