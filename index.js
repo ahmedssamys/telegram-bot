@@ -65,8 +65,8 @@ ${link}
         inline_keyboard: [
           [
             {
-              text: '🔁 إعادة البدء',
-              callback_data: 'restart'
+              text: '/start',
+              callback_data: '/start'
             }
           ]
         ]
