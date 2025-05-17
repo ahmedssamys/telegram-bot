@@ -20,11 +20,15 @@ bot.onText(/\/start|ريستارت/i, (msg) => {
   handleStart(msg.chat.id, msg.from.username);
 });
 
-// عند الضغط على زر "إعادة البدء"
+// عند الضغط على زر "إعادة التفعيل"
 bot.on('callback_query', (callbackQuery) => {
   const msg = callbackQuery.message;
   const username = callbackQuery.from.username;
-  handleStart(msg.chat.id, username);
+
+  // لازم نرد على الزر حتى لا يبقى عالقًا في تيليجرام
+  bot.answerCallbackQuery(callbackQuery.id).then(() => {
+    handleStart(msg.chat.id, username);
+  });
 });
 
 // دالة تنفيذ محتوى /start أو restart
@@ -67,12 +71,14 @@ ${link}
 5. اكتب اسم المستخدم الذي تريده (بالإنجليزية فقط، بدون مسافات).  
 6. إذا كان متاحًا، اضغط "حفظ" (✔️).
 
-بعد إضافة اسم المستخدم، اضغط الزر أدناه لإعادة المحاولة 👇`;
+بعد أن تقوم بإضافة اسم المستخدم، **يجب أن تضغط على الزر الموجود في الأسفل لإعادة تفعيل طلبك**.  
+نحن نقوم بذلك لأن كل عضو يحصل على رابط استمارة خاص به،  
+وذلك لأننا نعمل باحترافية عالية ونضمن لكل عضو الخصوصية والتميّز.`;
 
     bot.sendMessage(chatId, message, {
       reply_markup: {
         inline_keyboard: [
-          [{ text: '🔁 إعادة البدء', callback_data: 'restart' }]
+          [{ text: '✅ إعادة تفعيل طلبي', callback_data: 'restart' }]
         ]
       }
     });
