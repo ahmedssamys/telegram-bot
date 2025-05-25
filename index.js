@@ -16,12 +16,12 @@ app.listen(port, () => {
   console.log(`Web server running on port ${port}`);
 });
 
-// أوامر /start أو "ريستارت"
+// /start أو "ريستارت"
 bot.onText(/\/start|ريستارت/i, (msg) => {
   handleStart(msg.chat.id, msg.from.username);
 });
 
-// زر "إعادة التفعيل"
+// عند الضغط على زر "إعادة التفعيل"
 bot.on('callback_query', (callbackQuery) => {
   const msg = callbackQuery.message;
   const chatId = msg.chat.id;
@@ -30,28 +30,26 @@ bot.on('callback_query', (callbackQuery) => {
   const now = Date.now();
 
   bot.answerCallbackQuery(callbackQuery.id).then(() => {
-    // عرض رسالة الترحيب / رابط التسجيل أو تعليمات اليوزر
+    // تنفيذ handleStart لإظهار الرسالة الخاصة ببدء الطلب
     handleStart(chatId, username);
 
-    // حفظ وقت الضغط
+    // تسجيل وقت الضغط في الملف
     let data = {};
     if (fs.existsSync(path)) {
       data = JSON.parse(fs.readFileSync(path));
     }
-
     data[userId] = { last_restart: now, reminded: false };
     fs.writeFileSync(path, JSON.stringify(data, null, 2));
 
-    // جدولة التذكير بعد 30 ثانية
+    // جدولة رسالة التذكير بعد 30 ثانية (للتجربة)
     setTimeout(() => {
+      // قراءة البيانات مرة أخرى من الملف للتأكد من حالة المستخدم
       let current = {};
       if (fs.existsSync(path)) {
         current = JSON.parse(fs.readFileSync(path));
       }
-
-      const userData = current[userId];
-      if (userData && !userData.reminded) {
-        const reminder = `مرحبًا، نود فقط تنبيهك بأنك لم تُكمل تسجيل طلبك حتى الآن. لدينا عدد كبير من العضوات الجادات ينضممن يوميًا، وجميعهن يبحثن عن شريك جاد ومناسب.
+      // هنا نُرسل رسالة التذكير بدون مقارنة دقيقة، أيًا كانت الحالة
+      const reminderMessage = `مرحبًا، نود فقط تنبيهك بأنك لم تُكمل تسجيل طلبك حتى الآن. لدينا عدد كبير من العضوات الجادات ينضممن يوميًا، وجميعهن يبحثن عن شريك جاد ومناسب.
 
 نحن نقدّر وقتك، لذلك لا نرسل لك رسائل عبثية، ولكننا نؤمن أن فرصًا حقيقية قد تكون فاتتك بالفعل بسبب تأخرك في التسجيل.
 
@@ -59,22 +57,21 @@ bot.on('callback_query', (callbackQuery) => {
 
 لا تؤجل أكثر… ابدأ الآن.`;
 
-        bot.sendMessage(chatId, reminder, {
-          reply_markup: {
-            inline_keyboard: [
-              [{ text: 'استمرار التسجيل في الطلب', callback_data: 'restart' }]
-            ]
-          }
-        });
-
-        current[userId].reminded = true;
-        fs.writeFileSync(path, JSON.stringify(current, null, 2));
-      }
-    }, 30000); // بعد 30 ثانية
+      bot.sendMessage(chatId, reminderMessage, {
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: 'استمرار التسجيل في الطلب', callback_data: 'restart' }]
+          ]
+        }
+      });
+      // بعدها نحدّث الملف لتعليم أنه تم إرسال التذكير
+      current[userId].reminded = true;
+      fs.writeFileSync(path, JSON.stringify(current, null, 2));
+    }, 30000); // 30 ثانية للتجربة
   });
 });
 
-// دالة إرسال رسالة التسجيل
+// دالة تنفيذ /start أو restart
 function handleStart(chatId, username) {
   if (username) {
     const link = `https://www.arab-club.com/p/register-form?user=${username}`;
@@ -122,13 +119,13 @@ ${link}
 5. اكتب الاسم الذي تريده (بالإنجليزية فقط وبدون مسافات)  
 6. إذا كان متاحًا، اضغط "حفظ" (✔️)
 
-⏳ بعد أن تقوم بإضافة اسم المستخدم  
+بعد أن تقوم بإضافة اسم المستخدم  
 يرجى الضغط على الزر الموجود في الأسفل لإعادة تفعيل طلبك
 
 نحن نقوم بذلك لأن كل عضو يحصل على رابط استمارة خاص به  
 ونحن نعمل باحترافية عالية ونضمن لكل عضو الخصوصية والتميّز
 
-💡 يمكنك تقديم الطلب في أي وقت  
+يمكنك تقديم الطلب في أي وقت  
 طالما لديك رابط الاستمارة، يمكنك العودة إلى هذه المحادثة والتقديم بسهولة وقتما تشاء`;
 
     bot.sendMessage(chatId, message, {
