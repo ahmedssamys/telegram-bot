@@ -1,22 +1,21 @@
 const TelegramBot = require('node-telegram-bot-api');
 const express = require('express');
-const fs = require('fs');
 const app = express();
 const port = process.env.PORT || 3000;
-const path = './user_restart_log.json';
-
-const token = process.env.BOT_TOKEN || '7514683360:AAE3krLLlXY8jm7poIN2mFivA6udWIVOfLY';
-const bot = new TelegramBot(token, { polling: true });
 
 // Web Server لتشغيل البوت بدون توقف مع UptimeRobot
 app.get('/', (req, res) => {
   res.send('Bot is running ✅');
 });
 app.listen(port, () => {
-  console.log(`Web server running on port ${port}`);
+  console.log(Web server running on port ${port});
 });
 
-// /start أو "ريستارت"
+// توكن البوت من البيئة
+const token = process.env.BOT_TOKEN || '7514683360:AAE3krLLlXY8jm7poIN2mFivA6udWIVOfLY';
+const bot = new TelegramBot(token, { polling: true });
+
+// عند /start أو "ريستارت"
 bot.onText(/\/start|ريستارت/i, (msg) => {
   handleStart(msg.chat.id, msg.from.username);
 });
@@ -24,58 +23,18 @@ bot.onText(/\/start|ريستارت/i, (msg) => {
 // عند الضغط على زر "إعادة التفعيل"
 bot.on('callback_query', (callbackQuery) => {
   const msg = callbackQuery.message;
-  const chatId = msg.chat.id;
   const username = callbackQuery.from.username;
-  const userId = callbackQuery.from.id.toString();
-  const now = Date.now();
 
   bot.answerCallbackQuery(callbackQuery.id).then(() => {
-    // تنفيذ handleStart لإظهار الرسالة الخاصة ببدء الطلب
-    handleStart(chatId, username);
-
-    // تسجيل وقت الضغط في الملف
-    let data = {};
-    if (fs.existsSync(path)) {
-      data = JSON.parse(fs.readFileSync(path));
-    }
-    data[userId] = { last_restart: now, reminded: false };
-    fs.writeFileSync(path, JSON.stringify(data, null, 2));
-
-    // جدولة رسالة التذكير بعد 30 ثانية (للتجربة)
-    setTimeout(() => {
-      // قراءة البيانات مرة أخرى من الملف للتأكد من حالة المستخدم
-      let current = {};
-      if (fs.existsSync(path)) {
-        current = JSON.parse(fs.readFileSync(path));
-      }
-      // هنا نُرسل رسالة التذكير بدون مقارنة دقيقة، أيًا كانت الحالة
-      const reminderMessage = `مرحبًا، نود فقط تنبيهك بأنك لم تُكمل تسجيل طلبك حتى الآن. لدينا عدد كبير من العضوات الجادات ينضممن يوميًا، وجميعهن يبحثن عن شريك جاد ومناسب.
-
-نحن نقدّر وقتك، لذلك لا نرسل لك رسائل عبثية، ولكننا نؤمن أن فرصًا حقيقية قد تكون فاتتك بالفعل بسبب تأخرك في التسجيل.
-
-طلبك محفوظ ورابطك لا يزال فعالًا. يمكنك التقديم في أي وقت تشاء، والعودة إلى هذه المحادثة وقتما ترغب. لكن كل يوم تأجيل يعني أنك تتأخر عن فرصة جديدة ربما كانت مناسبة تمامًا لك.
-
-لا تؤجل أكثر… ابدأ الآن.`;
-
-      bot.sendMessage(chatId, reminderMessage, {
-        reply_markup: {
-          inline_keyboard: [
-            [{ text: 'استمرار التسجيل في الطلب', callback_data: 'restart' }]
-          ]
-        }
-      });
-      // بعدها نحدّث الملف لتعليم أنه تم إرسال التذكير
-      current[userId].reminded = true;
-      fs.writeFileSync(path, JSON.stringify(current, null, 2));
-    }, 30000); // 30 ثانية للتجربة
+    handleStart(msg.chat.id, username);
   });
 });
 
-// دالة تنفيذ /start أو restart
+// دالة تنفيذ محتوى /start أو restart
 function handleStart(chatId, username) {
   if (username) {
-    const link = `https://www.arab-club.com/p/register-form?user=${username}`;
-    const message = `مرحبًا بك عزيزي 👋💖  
+    const link = https://www.arab-club.com/p/register-form?user=${username};
+    const message = مرحبًا بك عزيزي 👋💖  
 شكرًا لانضمامك وسط آلاف الأعضاء الذين ينضمون لدينا كل يوم من الإناث والرجال 👥💫
 
 يسعدنا انضمامك معنا ونعتز بثقتك بنا 🤝
@@ -92,7 +51,7 @@ ${link}
 يرجى ملاحظة أنه يمكنك التقديم في أي وقت، لأن لديك رابط استمارة خاص بك  
 فقط ارجع إلى هذه المحادثة متى شئت وابدأ التقديم مرة أخرى بسهولة 😊
 
-نحن هنا لخدمتك دائمًا، ونتمنى لك تجربة راقية ومميزة معنا 💐🌟`;
+نحن هنا لخدمتك دائمًا، ونتمنى لك تجربة راقية ومميزة معنا 💐🌟;
 
     bot.sendMessage(chatId, message, {
       reply_markup: {
@@ -101,7 +60,7 @@ ${link}
     });
 
   } else {
-    const message = `مرحبًا عزيزي، نود إبلاغك بأن حسابك على تيليجرام مرتبط برقم هاتف فقط دون اسم مستخدم (Username)  
+    const message = مرحبًا عزيزي، نود إبلاغك بأن حسابك على تيليجرام مرتبط برقم هاتف فقط دون اسم مستخدم (Username)  
 وهذا يتعارض مع سياسات الخصوصية الخاصة بنا، حيث نعتمد دائمًا على اسم المستخدم لضمان سرية وخصوصية تامة لكل عضو  
 لهذا السبب لم يتم إنشاء رابط الاستمارة الخاص بك تلقائيًا
 
@@ -119,14 +78,14 @@ ${link}
 5. اكتب الاسم الذي تريده (بالإنجليزية فقط وبدون مسافات)  
 6. إذا كان متاحًا، اضغط "حفظ" (✔️)
 
-بعد أن تقوم بإضافة اسم المستخدم  
+⏳ بعد أن تقوم بإضافة اسم المستخدم  
 يرجى الضغط على الزر الموجود في الأسفل لإعادة تفعيل طلبك
 
 نحن نقوم بذلك لأن كل عضو يحصل على رابط استمارة خاص به  
 ونحن نعمل باحترافية عالية ونضمن لكل عضو الخصوصية والتميّز
 
-يمكنك تقديم الطلب في أي وقت  
-طالما لديك رابط الاستمارة، يمكنك العودة إلى هذه المحادثة والتقديم بسهولة وقتما تشاء`;
+💡 يمكنك تقديم الطلب في أي وقت  
+طالما لديك رابط الاستمارة، يمكنك العودة إلى هذه المحادثة والتقديم بسهولة وقتما تشاء;
 
     bot.sendMessage(chatId, message, {
       reply_markup: {
