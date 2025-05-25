@@ -1,9 +1,14 @@
 const TelegramBot = require('node-telegram-bot-api');
 const express = require('express');
+const fs = require('fs');
 const app = express();
 const port = process.env.PORT || 3000;
+const path = './user_restart_log.json';
 
-// Web Server لتشغيل البوت بدون توقف مع UptimeRobot
+const token = process.env.BOT_TOKEN || '7514683360:AAE3krLLlXY8jm7poIN2mFivA6udWIVOfLY';
+const bot = new TelegramBot(token, { polling: true });
+
+// Web server
 app.get('/', (req, res) => {
   res.send('Bot is running ✅');
 });
@@ -11,26 +16,72 @@ app.listen(port, () => {
   console.log(`Web server running on port ${port}`);
 });
 
-// توكن البوت من البيئة أو ثابت للتجربة
-const token = process.env.BOT_TOKEN || '7514683360:AAE3krLLlXY8jm7poIN2mFivA6udWIVOfLY';
-const bot = new TelegramBot(token, { polling: true });
+// حفظ معلومات المستخدم عند الضغط على "إعادة تفعيل"
+bot.on('callback_query', (callbackQuery) => {
+  const msg = callbackQuery.message;
+  const chatId = msg.chat.id;
+  const username = callbackQuery.from.username;
+  const userId = callbackQuery.from.id.toString();
+  const now = Date.now();
 
-// عند /start أو "ريستارت"
+  bot.answerCallbackQuery(callbackQuery.id).then(() => {
+    handleStart(chatId, username);
+
+    let data = {};
+    if (fs.existsSync(path)) {
+      data = JSON.parse(fs.readFileSync(path));
+    }
+
+    data[userId] = {
+      chat_id: chatId,
+      last_restart: now,
+      reminded: false
+    };
+
+    fs.writeFileSync(path, JSON.stringify(data, null, 2));
+  });
+});
+
+// /start أو "ريستارت"
 bot.onText(/\/start|ريستارت/i, (msg) => {
   handleStart(msg.chat.id, msg.from.username);
 });
 
-// عند الضغط على زر "إعادة التفعيل"
-bot.on('callback_query', (callbackQuery) => {
-  const msg = callbackQuery.message;
-  const username = callbackQuery.from.username;
+// إرسال رسالة التذكير تلقائيًا كل دقيقة
+setInterval(() => {
+  if (!fs.existsSync(path)) return;
 
-  bot.answerCallbackQuery(callbackQuery.id).then(() => {
-    handleStart(msg.chat.id, username);
-  });
-});
+  const data = JSON.parse(fs.readFileSync(path));
+  const now = Date.now();
 
-// الدالة الأساسية لإرسال الرسائل بناءً على وجود username
+  for (const userId in data) {
+    const user = data[userId];
+    if (!user.reminded && now - user.last_restart >= 30000) { // بعد 30 ثانية
+
+      const reminderMessage = `مرحبًا، نود فقط تنبيهك بأنك لم تُكمل تسجيل طلبك حتى الآن. لدينا عدد كبير من العضوات الجادات ينضممن يوميًا، وجميعهن يبحثن عن شريك جاد ومناسب.
+
+نحن نقدّر وقتك، لذلك لا نرسل لك رسائل عبثية، ولكننا نؤمن أن فرصًا حقيقية قد تكون فاتتك بالفعل بسبب تأخرك في التسجيل.
+
+طلبك محفوظ ورابطك لا يزال فعالًا. يمكنك التقديم في أي وقت تشاء، والعودة إلى هذه المحادثة وقتما ترغب. لكن كل يوم تأجيل يعني أنك تتأخر عن فرصة جديدة ربما كانت مناسبة تمامًا لك.
+
+لا تؤجل أكثر… ابدأ الآن.`;
+
+      bot.sendMessage(user.chat_id, reminderMessage, {
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: 'استمرار التسجيل في الطلب', callback_data: 'restart' }]
+          ]
+        }
+      });
+
+      data[userId].reminded = true;
+    }
+  }
+
+  fs.writeFileSync(path, JSON.stringify(data, null, 2));
+}, 60000); // كل دقيقة
+
+// دالة الترحيب وإرسال الرابط أو التعليمات
 function handleStart(chatId, username) {
   if (username) {
     const link = `https://www.arab-club.com/p/register-form?user=${username}`;
