@@ -1,7 +1,12 @@
 const TelegramBot = require('node-telegram-bot-api');
 const express = require('express');
+const fs = require('fs');
 const app = express();
 const port = process.env.PORT || 3000;
+const path = './user_restart_log.json';
+
+const token = process.env.BOT_TOKEN || '7514683360:AAE3krLLlXY8jm7poIN2mFivA6udWIVOfLY';
+const bot = new TelegramBot(token, { polling: true });
 
 // Web Server لتشغيل البوت بدون توقف مع UptimeRobot
 app.get('/', (req, res) => {
@@ -11,11 +16,7 @@ app.listen(port, () => {
   console.log(`Web server running on port ${port}`);
 });
 
-// توكن البوت من البيئة
-const token = process.env.BOT_TOKEN || '7514683360:AAE3krLLlXY8jm7poIN2mFivA6udWIVOfLY';
-const bot = new TelegramBot(token, { polling: true });
-
-// عند /start أو "ريستارت"
+// /start أو "ريستارت"
 bot.onText(/\/start|ريستارت/i, (msg) => {
   handleStart(msg.chat.id, msg.from.username);
 });
@@ -24,13 +25,48 @@ bot.onText(/\/start|ريستارت/i, (msg) => {
 bot.on('callback_query', (callbackQuery) => {
   const msg = callbackQuery.message;
   const username = callbackQuery.from.username;
+  const userId = callbackQuery.from.id.toString();
+  const chatId = msg.chat.id;
+  const now = Date.now();
 
   bot.answerCallbackQuery(callbackQuery.id).then(() => {
-    handleStart(msg.chat.id, username);
+    handleStart(chatId, username);
+
+    // تسجيل وقت الضغط
+    let data = {};
+    if (fs.existsSync(path)) {
+      data = JSON.parse(fs.readFileSync(path));
+    }
+    data[userId] = { last_restart: now };
+    fs.writeFileSync(path, JSON.stringify(data, null, 2));
+
+    // جدولة رسالة بعد 30 ثانية (بدل 3 أيام)
+    setTimeout(() => {
+      const updatedData = JSON.parse(fs.readFileSync(path));
+      const lastRestart = updatedData[userId]?.last_restart;
+
+      if (lastRestart && now === lastRestart) {
+        const reminderMessage = `مرحبًا، نود فقط تنبيهك بأنك لم تُكمل تسجيل طلبك حتى الآن. لدينا عدد كبير من العضوات الجادات ينضممن يوميًا، وجميعهن يبحثن عن شريك جاد ومناسب.
+
+نحن نقدّر وقتك، لذلك لا نرسل لك رسائل عبثية، ولكننا نؤمن أن فرصًا حقيقية قد تكون فاتتك بالفعل بسبب تأخرك في التسجيل.
+
+طلبك محفوظ ورابطك لا يزال فعالًا. يمكنك التقديم في أي وقت تشاء، والعودة إلى هذه المحادثة وقتما ترغب. لكن كل يوم تأجيل يعني أنك تتأخر عن فرصة جديدة ربما كانت مناسبة تمامًا لك.
+
+لا تؤجل أكثر… ابدأ الآن.`;
+
+        bot.sendMessage(chatId, reminderMessage, {
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: 'استمرار التسجيل في الطلب', callback_data: 'restart' }]
+            ]
+          }
+        });
+      }
+    }, 30000); // 30 ثانية للتجربة
   });
 });
 
-// دالة تنفيذ محتوى /start أو restart
+// دالة تنفيذ /start أو restart
 function handleStart(chatId, username) {
   if (username) {
     const link = `https://www.arab-club.com/p/register-form?user=${username}`;
