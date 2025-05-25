@@ -16,33 +16,42 @@ app.listen(port, () => {
   console.log(`Web server running on port ${port}`);
 });
 
-// /start أو "ريستارت"
+// أوامر /start أو "ريستارت"
 bot.onText(/\/start|ريستارت/i, (msg) => {
   handleStart(msg.chat.id, msg.from.username);
 });
 
-// عند الضغط على زر "إعادة التفعيل"
+// زر "إعادة التفعيل"
 bot.on('callback_query', (callbackQuery) => {
   const msg = callbackQuery.message;
+  const chatId = msg.chat.id;
   const username = callbackQuery.from.username;
   const userId = callbackQuery.from.id.toString();
-  const chatId = msg.chat.id;
   const now = Date.now();
 
   bot.answerCallbackQuery(callbackQuery.id).then(() => {
+    // عرض رسالة الترحيب / رابط التسجيل أو تعليمات اليوزر
     handleStart(chatId, username);
 
-    // تسجيل الضغط
+    // حفظ وقت الضغط
     let data = {};
     if (fs.existsSync(path)) {
       data = JSON.parse(fs.readFileSync(path));
     }
-    data[userId] = { last_restart: now };
+
+    data[userId] = { last_restart: now, reminded: false };
     fs.writeFileSync(path, JSON.stringify(data, null, 2));
 
-    // 🔁 إرسال الرسالة بعد 30 ثانية (بدون شروط)
+    // جدولة التذكير بعد 30 ثانية
     setTimeout(() => {
-      const reminderMessage = `مرحبًا، نود فقط تنبيهك بأنك لم تُكمل تسجيل طلبك حتى الآن. لدينا عدد كبير من العضوات الجادات ينضممن يوميًا، وجميعهن يبحثن عن شريك جاد ومناسب.
+      let current = {};
+      if (fs.existsSync(path)) {
+        current = JSON.parse(fs.readFileSync(path));
+      }
+
+      const userData = current[userId];
+      if (userData && !userData.reminded) {
+        const reminder = `مرحبًا، نود فقط تنبيهك بأنك لم تُكمل تسجيل طلبك حتى الآن. لدينا عدد كبير من العضوات الجادات ينضممن يوميًا، وجميعهن يبحثن عن شريك جاد ومناسب.
 
 نحن نقدّر وقتك، لذلك لا نرسل لك رسائل عبثية، ولكننا نؤمن أن فرصًا حقيقية قد تكون فاتتك بالفعل بسبب تأخرك في التسجيل.
 
@@ -50,28 +59,22 @@ bot.on('callback_query', (callbackQuery) => {
 
 لا تؤجل أكثر… ابدأ الآن.`;
 
-      bot.sendMessage(chatId, reminderMessage, {
-        reply_markup: {
-          inline_keyboard: [
-            [{ text: 'استمرار التسجيل في الطلب', callback_data: 'restart' }]
-          ]
-        }
-      });
+        bot.sendMessage(chatId, reminder, {
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: 'استمرار التسجيل في الطلب', callback_data: 'restart' }]
+            ]
+          }
+        });
 
-      // تحديث حالة التذكير (اختياري)
-      let updatedData = {};
-      if (fs.existsSync(path)) {
-        updatedData = JSON.parse(fs.readFileSync(path));
+        current[userId].reminded = true;
+        fs.writeFileSync(path, JSON.stringify(current, null, 2));
       }
-      if (!updatedData[userId]) updatedData[userId] = {};
-      updatedData[userId].reminded = true;
-      fs.writeFileSync(path, JSON.stringify(updatedData, null, 2));
-
-    }, 30000); // ⏳ 30 ثانية
+    }, 30000); // بعد 30 ثانية
   });
 });
 
-// دالة تنفيذ /start أو restart
+// دالة إرسال رسالة التسجيل
 function handleStart(chatId, username) {
   if (username) {
     const link = `https://www.arab-club.com/p/register-form?user=${username}`;
