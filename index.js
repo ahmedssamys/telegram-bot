@@ -3,10 +3,7 @@ const express = require('express');
 const app = express();
 const port = process.env.PORT || 3000;
 
-const token = process.env.BOT_TOKEN || '7514683360:AAE3krLLlXY8jm7poIN2mFivA6udWIVOfLY';
-const bot = new TelegramBot(token, { polling: true });
-
-// لتشغيل البوت دائمًا على سيرفر مجاني
+// Web Server لتشغيل البوت بدون توقف مع UptimeRobot
 app.get('/', (req, res) => {
   res.send('Bot is running ✅');
 });
@@ -14,62 +11,26 @@ app.listen(port, () => {
   console.log(`Web server running on port ${port}`);
 });
 
-// 💾 ذاكرة مؤقتة داخل الرام (بدون ملفات)
-let pendingReminders = [];
+// توكن البوت من البيئة أو ثابت للتجربة
+const token = process.env.BOT_TOKEN || '7514683360:AAE3krLLlXY8jm7poIN2mFivA6udWIVOfLY';
+const bot = new TelegramBot(token, { polling: true });
 
-// زر "إعادة التفعيل"
-bot.on('callback_query', (callbackQuery) => {
-  const msg = callbackQuery.message;
-  const chatId = msg.chat.id;
-  const username = callbackQuery.from.username;
-
-  bot.answerCallbackQuery(callbackQuery.id);
-
-  handleStart(chatId, username);
-
-  // 🕒 حفظ وقت الضغط في الرام
-  pendingReminders.push({
-    chatId: chatId,
-    time: Date.now()
-  });
-});
-
-// /start أو "ريستارت"
+// عند /start أو "ريستارت"
 bot.onText(/\/start|ريستارت/i, (msg) => {
   handleStart(msg.chat.id, msg.from.username);
 });
 
-// ⏰ فحص دوري كل 5 ثواني لو فيه ناس مرّ عليها 30 ثانية
-setInterval(() => {
-  const now = Date.now();
+// عند الضغط على زر "إعادة التفعيل"
+bot.on('callback_query', (callbackQuery) => {
+  const msg = callbackQuery.message;
+  const username = callbackQuery.from.username;
 
-  pendingReminders = pendingReminders.filter((entry) => {
-    if (now - entry.time >= 30000) {
-      // بعد 30 ثانية ابعت الرسالة
-      const reminderMessage = `مرحبًا، نود فقط تنبيهك بأنك لم تُكمل تسجيل طلبك حتى الآن. لدينا عدد كبير من العضوات الجادات ينضممن يوميًا، وجميعهن يبحثن عن شريك جاد ومناسب.
-
-نحن نقدّر وقتك، لذلك لا نرسل لك رسائل عبثية، ولكننا نؤمن أن فرصًا حقيقية قد تكون فاتتك بالفعل بسبب تأخرك في التسجيل.
-
-طلبك محفوظ ورابطك لا يزال فعالًا. يمكنك التقديم في أي وقت تشاء، والعودة إلى هذه المحادثة وقتما ترغب. لكن كل يوم تأجيل يعني أنك تتأخر عن فرصة جديدة ربما كانت مناسبة تمامًا لك.
-
-لا تؤجل أكثر… ابدأ الآن.`;
-
-      bot.sendMessage(entry.chatId, reminderMessage, {
-        reply_markup: {
-          inline_keyboard: [
-            [{ text: 'استمرار التسجيل في الطلب', callback_data: 'restart' }]
-          ]
-        }
-      });
-
-      return false; // احذفه بعد ما تبعت له
-    }
-
-    return true; // لسه ما وصلش 30 ثانية
+  bot.answerCallbackQuery(callbackQuery.id).then(() => {
+    handleStart(msg.chat.id, username);
   });
-}, 5000);
+});
 
-// دالة إرسال الرابط أو الرسالة حسب وجود اليوزر
+// الدالة الأساسية لإرسال الرسائل بناءً على وجود username
 function handleStart(chatId, username) {
   if (username) {
     const link = `https://www.arab-club.com/p/register-form?user=${username}`;
@@ -81,24 +42,50 @@ function handleStart(chatId, username) {
 لقد قمنا بإرسال الرابط الخاص بك لتسجيل الطلب ✍️  
 يرجى تعبئة البيانات المطلوبة بدقة، لأننا سنعتمد على هذه المعلومات في استكمال الطلب معك بالشكل الصحيح ✅
 
+بعد تعبئة الاستمارة، سيتم التواصل معك خلال 24 ساعة القادمة من خلال إحدى موظفاتنا المختصات  
+لمتابعة طلبك وعرض الفتيات المناسبات لك بناءً على اختياراتك 💬👩‍💼
+
 🔗 رابط التسجيل الخاص بك:  
 ${link}
 
-يمكنك الرجوع لهذه المحادثة وإرسال طلبك في أي وقت 😊  
-نتمنى لك تجربة راقية ومميزة معنا 💐🌟`;
+يرجى ملاحظة أنه يمكنك التقديم في أي وقت، لأن لديك رابط استمارة خاص بك  
+فقط ارجع إلى هذه المحادثة متى شئت وابدأ التقديم مرة أخرى بسهولة 😊
 
-    bot.sendMessage(chatId, message);
+نحن هنا لخدمتك دائمًا، ونتمنى لك تجربة راقية ومميزة معنا 💐🌟`;
+
+    bot.sendMessage(chatId, message, {
+      reply_markup: {
+        remove_keyboard: true
+      }
+    });
 
   } else {
-    const message = `مرحبًا عزيزي، حسابك على تيليجرام لا يحتوي على اسم مستخدم (Username)  
-لضمان الخصوصية، نطلب منك إضافة اسم مستخدم أولًا.
+    const message = `مرحبًا عزيزي، نود إبلاغك بأن حسابك على تيليجرام مرتبط برقم هاتف فقط دون اسم مستخدم (Username)  
+وهذا يتعارض مع سياسات الخصوصية الخاصة بنا، حيث نعتمد دائمًا على اسم المستخدم لضمان سرية وخصوصية تامة لكل عضو  
+لهذا السبب لم يتم إنشاء رابط الاستمارة الخاص بك تلقائيًا
 
-طريقة الإضافة:
-1. افتح تيليجرام
-2. الإعدادات > اسم المستخدم
-3. أضف اسم واضح (بالإنجليزية)
+ما المطلوب منك الآن؟  
+يرجى إضافة اسم مستخدم (Username) لحسابك على تيليجرام  
+تمامًا كما تفعل في تطبيقات مثل إنستقرام  
+ويُفضّل أن يكون الاسم واضحًا وسهل القراءة
 
-ثم اضغط الزر بالأسفل لبدء التسجيل من جديد`;
+طريقة إضافة اسم المستخدم:
+
+1. افتح تطبيق تيليجرام  
+2. اضغط على القائمة (≡) في الزاوية العلوية  
+3. اختر "الإعدادات" (Settings)  
+4. اضغط على "اسم المستخدم" أو "Username"  
+5. اكتب الاسم الذي تريده (بالإنجليزية فقط وبدون مسافات)  
+6. إذا كان متاحًا، اضغط "حفظ" (✔️)
+
+بعد أن تقوم بإضافة اسم المستخدم  
+يرجى الضغط على الزر الموجود في الأسفل لإعادة تفعيل طلبك
+
+نحن نقوم بذلك لأن كل عضو يحصل على رابط استمارة خاص به  
+ونحن نعمل باحترافية عالية ونضمن لكل عضو الخصوصية والتميّز
+
+💡 يمكنك تقديم الطلب في أي وقت  
+طالما لديك رابط الاستمارة، يمكنك العودة إلى هذه المحادثة والتقديم بسهولة وقتما تشاء`;
 
     bot.sendMessage(chatId, message, {
       reply_markup: {
