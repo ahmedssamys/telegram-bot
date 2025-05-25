@@ -40,12 +40,13 @@ bot.on('callback_query', (callbackQuery) => {
     data[userId] = { last_restart: now };
     fs.writeFileSync(path, JSON.stringify(data, null, 2));
 
-    // جدولة رسالة بعد 30 ثانية (بدل 3 أيام)
+    // جدولة رسالة بعد 30 ثانية (بدل 3 أيام مؤقتًا للتجربة)
     setTimeout(() => {
       const updatedData = JSON.parse(fs.readFileSync(path));
       const lastRestart = updatedData[userId]?.last_restart;
 
-      if (lastRestart && now === lastRestart) {
+      // ✅ التصحيح هنا: التأكد من مرور 30 ثانية
+      if (lastRestart && Date.now() - lastRestart >= 30000) {
         const reminderMessage = `مرحبًا، نود فقط تنبيهك بأنك لم تُكمل تسجيل طلبك حتى الآن. لدينا عدد كبير من العضوات الجادات ينضممن يوميًا، وجميعهن يبحثن عن شريك جاد ومناسب.
 
 نحن نقدّر وقتك، لذلك لا نرسل لك رسائل عبثية، ولكننا نؤمن أن فرصًا حقيقية قد تكون فاتتك بالفعل بسبب تأخرك في التسجيل.
