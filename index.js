@@ -32,7 +32,7 @@ bot.on('callback_query', (callbackQuery) => {
   bot.answerCallbackQuery(callbackQuery.id).then(() => {
     handleStart(chatId, username);
 
-    // تسجيل وقت الضغط
+    // تسجيل الضغط
     let data = {};
     if (fs.existsSync(path)) {
       data = JSON.parse(fs.readFileSync(path));
@@ -40,14 +40,9 @@ bot.on('callback_query', (callbackQuery) => {
     data[userId] = { last_restart: now };
     fs.writeFileSync(path, JSON.stringify(data, null, 2));
 
-    // جدولة رسالة بعد 30 ثانية (بدل 3 أيام مؤقتًا للتجربة)
+    // 🔁 إرسال الرسالة بعد 30 ثانية (بدون شروط)
     setTimeout(() => {
-      const updatedData = JSON.parse(fs.readFileSync(path));
-      const lastRestart = updatedData[userId]?.last_restart;
-
-      // ✅ التصحيح هنا: التأكد من مرور 30 ثانية
-      if (lastRestart && Date.now() - lastRestart >= 30000) {
-        const reminderMessage = `مرحبًا، نود فقط تنبيهك بأنك لم تُكمل تسجيل طلبك حتى الآن. لدينا عدد كبير من العضوات الجادات ينضممن يوميًا، وجميعهن يبحثن عن شريك جاد ومناسب.
+      const reminderMessage = `مرحبًا، نود فقط تنبيهك بأنك لم تُكمل تسجيل طلبك حتى الآن. لدينا عدد كبير من العضوات الجادات ينضممن يوميًا، وجميعهن يبحثن عن شريك جاد ومناسب.
 
 نحن نقدّر وقتك، لذلك لا نرسل لك رسائل عبثية، ولكننا نؤمن أن فرصًا حقيقية قد تكون فاتتك بالفعل بسبب تأخرك في التسجيل.
 
@@ -55,15 +50,24 @@ bot.on('callback_query', (callbackQuery) => {
 
 لا تؤجل أكثر… ابدأ الآن.`;
 
-        bot.sendMessage(chatId, reminderMessage, {
-          reply_markup: {
-            inline_keyboard: [
-              [{ text: 'استمرار التسجيل في الطلب', callback_data: 'restart' }]
-            ]
-          }
-        });
+      bot.sendMessage(chatId, reminderMessage, {
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: 'استمرار التسجيل في الطلب', callback_data: 'restart' }]
+          ]
+        }
+      });
+
+      // تحديث حالة التذكير (اختياري)
+      let updatedData = {};
+      if (fs.existsSync(path)) {
+        updatedData = JSON.parse(fs.readFileSync(path));
       }
-    }, 30000); // 30 ثانية للتجربة
+      if (!updatedData[userId]) updatedData[userId] = {};
+      updatedData[userId].reminded = true;
+      fs.writeFileSync(path, JSON.stringify(updatedData, null, 2));
+
+    }, 30000); // ⏳ 30 ثانية
   });
 });
 
