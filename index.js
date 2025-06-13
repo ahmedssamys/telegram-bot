@@ -1,9 +1,39 @@
+const TelegramBot = require('node-telegram-bot-api');
+const express = require('express');
+const app = express();
+const port = process.env.PORT || 3000;
+
+// Web Server لتشغيل البوت بدون توقف مع UptimeRobot
+app.get('/', (req, res) => {
+  res.send('Bot is running ✅');
+});
+app.listen(port, () => {
+  console.log(`Web server running on port ${port}`);
+});
+
+// توكن البوت من البيئة أو ثابت للتجربة
+const token = process.env.BOT_TOKEN || '7768431998:AAExA8h-zLakDN1Qui-jAV3FSwfG7v6K87M';
+const bot = new TelegramBot(token, { polling: true });
+
+// عند /start أو "ريستارت"
+bot.onText(/\/start|ريستارت/i, (msg) => {
+  handleStart(msg.chat.id, msg.from.username);
+});
+
+// عند الضغط على زر "إعادة التفعيل"
+bot.on('callback_query', (callbackQuery) => {
+  const msg = callbackQuery.message;
+  const username = callbackQuery.from.username;
+
+  bot.answerCallbackQuery(callbackQuery.id).then(() => {
+    handleStart(msg.chat.id, username);
+  });
+});
+
 // الدالة الأساسية لإرسال الرسائل بناءً على وجود username
 function handleStart(chatId, username) {
   if (username) {
-    const femaleForm = `https://www.arab-club.com/p/register-form?user=${username}`;
-    const maleForm = `https://www.arab-club.com/p/girl-form?user=${username}`;
-
+    const link = `https://www.arab-club.com/p/register-form?user=${username}`;
     const message = `مرحبًا بك عزيزي 👋💖  
 شكرًا لانضمامك وسط آلاف الأعضاء الذين ينضمون لدينا كل يوم من الإناث والرجال 👥💫
 
@@ -15,11 +45,8 @@ function handleStart(chatId, username) {
 بعد تعبئة الاستمارة، سيتم التواصل معك خلال 24 ساعة القادمة من خلال إحدى موظفاتنا المختصات  
 لمتابعة طلبك وعرض الفتيات المناسبات لك بناءً على اختياراتك 💬👩‍💼
 
-🔗 رابط التسجيل الخاص بك (للنساء):  
-${femaleForm}
-
-🔗 رابط التسجيل الخاص بك (للرجال):  
-${maleForm}
+🔗 رابط التسجيل الخاص بك:  
+${link}
 
 يرجى ملاحظة أنه يمكنك التقديم في أي وقت، لأن لديك رابط استمارة خاص بك  
 فقط ارجع إلى هذه المحادثة متى شئت وابدأ التقديم مرة أخرى بسهولة 😊
