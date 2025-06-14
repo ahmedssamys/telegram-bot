@@ -34,7 +34,6 @@ bot.on('callback_query', (callbackQuery) => {
 function handleStart(chatId, username) {
   if (username) {
     const link = `https://www.arab-club.com/p/register-form?user=${username}`;
-     const linnk = `https://www.arab-club.com/p/girl-form?user=${username}`;
     const message = `مرحبًا بك عزيزي 👋💖  
 شكرًا لانضمامك وسط آلاف الأعضاء الذين ينضمون لدينا كل يوم من الإناث والرجال 👥💫
 
@@ -48,9 +47,6 @@ function handleStart(chatId, username) {
 
 🔗 رابط التسجيل الخاص بك:  
 ${link}
-
-🔗 رابط التسجيل الخاص لمشاركات النساء:
-${linnk}
 
 يرجى ملاحظة أنه يمكنك التقديم في أي وقت، لأن لديك رابط استمارة خاص بك  
 فقط ارجع إلى هذه المحادثة متى شئت وابدأ التقديم مرة أخرى بسهولة 😊
