@@ -34,6 +34,7 @@ bot.on('callback_query', (callbackQuery) => {
 function handleStart(chatId, username) {
   if (username) {
     const link = `https://www.arab-club.com/p/register-form?user=${username}`;
+    const linnk = `https://www.arab-club.com/p/subscribe?user=${username}`;
     const message = `مرحبًا بك عزيزي 👋💖  
 شكرًا لانضمامك وسط آلاف الأعضاء الذين ينضمون لدينا كل يوم من الإناث والرجال 👥💫
 
@@ -45,8 +46,12 @@ function handleStart(chatId, username) {
 بعد تعبئة الاستمارة، سيتم التواصل معك خلال 24 ساعة القادمة من خلال إحدى موظفاتنا المختصات  
 لمتابعة طلبك وعرض الفتيات المناسبات لك بناءً على اختياراتك 💬👩‍💼
 
-🔗 رابط التسجيل الخاص بك:  
+🔗 رابط التسجيل الخاص بك كـ عضو ذكر 👨:
 ${link}
+
+🔗 رابط التسجيل الخاص بك كـ عضوة أنثى 👩:
+${linnk}
+
 
 يرجى ملاحظة أنه يمكنك التقديم في أي وقت، لأن لديك رابط استمارة خاص بك  
 فقط ارجع إلى هذه المحادثة متى شئت وابدأ التقديم مرة أخرى بسهولة 😊
