@@ -34,7 +34,7 @@ bot.on('callback_query', (callbackQuery) => {
 function handleStart(chatId, username) {
   if (username) {
     const link = `https://www.arab-club.com/p/register-form?user=${username}`;
-    const linnk = `https://www.arab-club.com/p/subscribe?user=${username}`;
+    const linnk = `https://www.arab-club.com/p/girls-subscription?user=${username}`;
     const message = `مرحبًا بك عزيزي 👋💖  
 شكرًا لانضمامك وسط آلاف الأعضاء الذين ينضمون لدينا كل يوم من الإناث والرجال 👥💫
 
