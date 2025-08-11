@@ -14,7 +14,7 @@ app.listen(port, () => {
 });
 
 // ضع هنا رابط Google Apps Script (رابط الـ Web App) الصحيح
-const GOOGLE_SCRIPT_URL = process.env.GOOGLE_SHEET_WEBAPP_URL || 'https://script.google.com/macros/s/AKfycbwQouNjscp9SdziO-BltAnW1kOcx2z9no7uvTLihrOxTaVPTcWiU2hJZzbDzX8PMI5n/exec';
+const GOOGLE_SCRIPT_URL = process.env.GOOGLE_SHEET_WEBAPP_URL || 'https://script.google.com/macros/s/AKfycbwuDFOBzgJCMA21IJ0A0UnWq1epE_Z5WjOyOW47kVtKdcvyRA8jMcmwgHRrzadkTLUW/exec';
 
 // توكن البوت من البيئة أو ثابت للتجربة
 const token = process.env.BOT_TOKEN || '7768431998:AAExA8h-zLakDN1Qui-jAV3FSwfG7v6K87M';
