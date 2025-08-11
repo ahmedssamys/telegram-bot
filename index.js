@@ -14,7 +14,7 @@ app.listen(port, () => {
 });
 
 // ضع هنا رابط Google Apps Script (رابط الـ Web App)
-const GOOGLE_SCRIPT_URL = process.env.GOOGLE_SHEET_WEBAPP_URL || 'https://script.google.com/macros/s/AKfycbxV5h91Ao56E8rWCNEEy00cF2YmzFlGjadFpaIRgUVEuphpaglpGTxeRTunjdKgDy1x/exec';
+const GOOGLE_SCRIPT_URL = process.env.GOOGLE_SHEET_WEBAPP_URL || 'https://script.google.com/macros/s/AKfycbyswROtKpUvJ5Ld7PrbnO7diAdVU91CtLr0tIl-4z53SzPwp7E3qHf1txAv5xzpSc_D/exec';
 
 // توكن البوت من البيئة أو ثابت للتجربة
 const token = process.env.BOT_TOKEN || '7768431998:AAExA8h-zLakDN1Qui-jAV3FSwfG7v6K87M';
@@ -98,4 +98,5 @@ function handleStart(chatId, username) {
     });
   }
 }
+
 
