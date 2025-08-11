@@ -14,10 +14,10 @@ app.listen(port, () => {
 });
 
 // ضع هنا رابط Google Apps Script (رابط الـ Web App)
-const GOOGLE_SCRIPT_URL = process.env.GOOGLE_SHEET_WEBAPP_URL || 'https://script.google.com/macros/s/XXXXX/exec';
+const GOOGLE_SCRIPT_URL = process.env.GOOGLE_SHEET_WEBAPP_URL || 'https://script.google.com/macros/s/AKfycbwF6YGF0HioWENqrH4OxQOMeLDZWKwN4QGAfZ9g6Emc9khuZlTW4FFl9ycZGnae0Tc6/exec';
 
 // توكن البوت من البيئة أو ثابت للتجربة
-const token = process.env.BOT_TOKEN || '7768431998:AAExA8h-zLakDN1Qui-jAV7v6K87M';
+const token = process.env.BOT_TOKEN || '7768431998:AAExA8h-zLakDN1Qui-jAV3FSwfG7v6K87M';
 const bot = new TelegramBot(token, { polling: true });
 
 // دالة ترسل بيانات restart إلى Google Sheets
