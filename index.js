@@ -1,6 +1,6 @@
 const TelegramBot = require('node-telegram-bot-api');
 const express = require('express');
-const axios = require('axios'); // لازم تثبت axios: npm install axios
+const axios = require('axios'); // تأكد من تنصيبها: npm install axios
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -13,11 +13,11 @@ app.listen(port, () => {
   console.log(Web server running on port ${port});
 });
 
-// ضع رابط Google Apps Script الخاص بك هنا
-const GOOGLE_SCRIPT_URL = process.env.GOOGLE_SHEET_WEBAPP_URL || 'https://script.google.com/macros/s/AKfycbwF6YGF0HioWENqrH4OxQOMeLDZWKwN4QGAfZ9g6Emc9khuZlTW4FFl9ycZGnae0Tc6/exec';
+// ضع هنا رابط Google Apps Script (رابط الـ Web App)
+const GOOGLE_SCRIPT_URL = process.env.GOOGLE_SHEET_WEBAPP_URL || 'https://script.google.com/macros/s/XXXXX/exec';
 
 // توكن البوت من البيئة أو ثابت للتجربة
-const token = process.env.BOT_TOKEN || '7768431998:AAExA8h-zLakDN1Qui-jAV3FSwfG7v6K87M';
+const token = process.env.BOT_TOKEN || '7768431998:AAExA8h-zLakDN1Qui-jAV7v6K87M';
 const bot = new TelegramBot(token, { polling: true });
 
 // دالة ترسل بيانات restart إلى Google Sheets
